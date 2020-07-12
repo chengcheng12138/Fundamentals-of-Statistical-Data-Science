@@ -1,0 +1,288 @@
+---
+title: "Untitled"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+1.descriptive statistics
+1.1
+```{r,echo=F}
+library(dplyr)
+library(car)
+df<-Salaries
+nrow(df)
+colnames(df)
+```
+
+1.2 qualitative variables
+```{r,echo=F}
+rank_sum <- summary(df$rank)
+discpl_sum <- summary(df$discipline)
+sex_sum <- summary(df$sex)
+rank_sum
+discpl_sum
+sex_sum
+```
+
+1.3 quantitative variable
+1.3.1 salary
+```{r,echo=F}
+library(ggplot2)
+salary_hist <- df %>% ggplot() +
+geom_histogram(aes(x = salary), color = "black", fill = "blue", bins = 50) +
+labs(x = "Nine-Month Salary (in dollars)", y = "Count", title = "Nine-Month Salary Distribution")
+
+salary_hist
+```
+```{r,echo=F}
+summary(df$salary)
+```
+
+
+1.3.2 years since Ph.D
+
+```{r,echo=F}
+phd_hist <- df %>% ggplot() +
+geom_histogram(aes(x = yrs.since.phd), color = "black", fill = "green", bins = 50) +
+labs(x = "Years since Ph.D.", y = "Count", title = "Years since Ph.D. Distribution")
+
+phd_hist
+```
+
+```{r,echo=F}
+summary(df$yrs.since.phd)
+```
+
+1.3.3 years of service
+
+```{r,echo=F}
+service_hist <- df %>% ggplot() +
+geom_histogram(aes(x = yrs.service), color = "black", fill = "orange", bins = 50) +labs(x = "Years of Service", y = "Count",title = "Years of Service Distribution")
+
+service_hist
+```
+
+```{r,echo=F}
+summary(df$yrs.service)
+```
+
+2 Assess the relationship between the quantitative variable and qualitative variable
+
+2.1 Assessing years since Ph.D,salary,and rank
+
+```{r,echo=F}
+library(ggplot2)
+attach(Salaries)
+ggplot(mapping=aes(x=yrs.since.phd,y=salary)) +
+geom_point(mapping=aes(colour=rank)) 
+```
+
+2.2 Assessing years since Ph.D, salary and discipline
+```{r,echo=F}
+library(ggplot2)
+ggplot(mapping=aes(x=yrs.since.phd,y=salary)) +
+geom_point(mapping=aes(colour=discipline)) 
+```
+
+2.3 Assessing Salary, years of service and rank
+
+```{r,echo=F}
+library(ggplot2)
+ggplot(mapping=aes(x=yrs.service,y=salary)) +
+geom_point(mapping=aes(colour=rank)) 
+```
+
+2.4 Assessing salary, sex, years of service
+```{r,echo=F}
+library(ggplot2)
+ggplot(mapping=aes(x=yrs.service,y=salary)) +
+geom_point(mapping=aes(colour=sex)) 
+```
+
+3. Univariate regression analysis
+3.1 check outlier
+```{r,echo=F}
+boxplot(salary)
+boxplot(yrs.service)
+boxplot(yrs.since.phd)
+```
+from the boxplot, we can find that there is no obvious outlier in salary, years of service and years since Ph.D
+
+3.2 salary~rank
+```{r,echo=F}
+mod_rank_slr <- lm(salary~rank, data = df)
+summary(mod_rank_slr)
+```
+
+3.3 salary~sex
+```{r,echo=F}
+mod_sex_slr <- lm(salary~sex, data =df)
+summary(mod_sex_slr)
+```
+
+3.4 salary~discipline
+```{r,echo=F}
+mod_discpl_slr <- lm(salary~discipline, data = df)
+summary(mod_discpl_slr)
+```
+
+3.5 salary~years since Ph.D
+```{r,echo=F}
+mod_phd_slr <- lm(salary~yrs.since.phd, data = df)
+summary(mod_phd_slr)
+```
+
+3.6 salary~years of service
+```{r,echo=F}
+mod_service_slr <- lm(salary~yrs.service,data=df)
+summary(mod_service_slr)
+```
+
+4 Multivariate regression analysis
+4.1 full model
+```{r,echo=F}
+full_mod <- lm(salary~., data = df)
+
+summary(full_mod)
+```
+
+4.2 model without sex
+```{r,echo=F}
+mod_no_sex <- lm(salary~rank+discipline+yrs.since.phd+yrs.service, data=df)
+summary(mod_no_sex)
+```
+
+VIF
+```{r,echo=F}
+car::vif(mod = mod_no_sex)
+```
+
+4.3 model without sex, years since Ph.D, years of service
+```{r,echo=F}
+mod_no_phd <- lm(salary~discipline+yrs.service+rank,
+                  data = df)
+
+summary(mod_no_phd)
+```
+
+VIF
+```{r,echo=F}
+car::vif(mod_no_phd)
+```
+
+4.4 model without rank and sex
+
+```{r,echo=F}
+mod_no_rank <- lm(salary~discipline+yrs.since.phd+yrs.service,
+                  data = df)
+
+summary(mod_no_rank)
+```
+
+VIF
+```{r,echo=F}
+car::vif(mod_no_rank)
+```
+
+4.5 model without sex and years of service
+```{r,echo=F}
+mod_no_service <-lm(salary~discipline+yrs.since.phd+rank,
+                  data = df)
+
+summary(mod_no_service)
+```
+
+VIF
+```{r,echo=F}
+car::vif(mod_no_service)
+```
+
+4.6 final model
+```{r,echo=F}
+mod_final <- lm(salary~discipline+rank,data=df)
+summary(mod_final)
+```
+
+
+5. model diagnostic
+```{r,echo=F}
+attach(Salaries)
+reg1<-lm(salary~rank+discipline)
+summary(reg1)
+```
+
+```{r,echo=F}
+plot(reg1)
+```
+
+
+
+
+```{r,echo=F}
+salary1<-log(salary)
+reg2<-lm(salary1~rank+discipline)
+summary(reg2)
+plot(reg2)
+```
+
+
+```{r,echo=F}
+salary2<-sqrt(salary)
+reg3<-lm(salary2~rank+discipline)
+summary(reg3)
+plot(reg3)
+```
+
+```{r,echo=F}
+salary3<-1/salary
+reg4<-lm(salary3~rank+discipline)
+summary(reg4)
+plot(reg4)
+```
+
+```{r,echo=F}
+cooksd=cooks.distance(reg4)
+```
+
+```{r,echo=F}
+n<-length(salary)
+p<-4
+m<-4/(n-p)
+t<-which(cooksd>m)
+t
+{plot(cooksd)
+abline(h =m, col="red")}  
+
+```
+
+```{r,echo=F}
+Salaries1<-Salaries[-t,]
+```
+
+```{r,echo=F}
+salary4<-1/Salaries1$salary
+reg5<-lm(salary4~Salaries1$rank+Salaries1$discipline)
+summary(reg5)
+plot(reg5)
+```
+
+7. estimated factor level means
+
+the mean salary of rank is Assistant professor and discipline is A is 10^5/1.314=76103.5
+the mean salary of rank is Assistant professor and discipline is B is 10^5/1.1967=83563.13
+the mean salary of rank is Associate professor and discipline is A is 10^5/1.1446=87366.77
+the mean salary of rank is Associate professor and discipline is B is 10^5/1.0273=97342.55
+the mean salary of rank is professor and discipline is A is 10^5/0.8766=114077.1
+the mean salary of rank is professor and discipline is B is 10^5/0.7593=131700.3
+
+
+
+```{r,echo=F}
+ggplot(data=Salaries1)+
+  geom_boxplot(mapping=aes(x=rank,y=salary))+
+  facet_wrap(~discipline)
+```
+
+
+
